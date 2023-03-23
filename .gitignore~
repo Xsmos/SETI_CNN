@@ -3,5 +3,4 @@ sample_submission.csv
 test/
 train/
 train_labels.csv
-train_preprocessed/
 xia*
