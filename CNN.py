@@ -6,11 +6,10 @@
 
 import os
 import numpy as np
-from time import sleep
-import matplotlib.pyplot as plt
+# from time import sleep
+# import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
-from preprocess import preprocess
 import keras
 from keras.utils import to_categorical
 from keras.models import Sequential, Model
@@ -19,6 +18,9 @@ from keras.layers import Conv2D, MaxPooling2D
 from keras.layers.normalization import batch_normalization
 from keras.layers.activation import LeakyReLU
 
+import joblib
+
+from preprocess import preprocess
 
 # In[2]:
 
@@ -52,7 +54,7 @@ train_X.shape, test_X.shape, train_label.shape, test_label.shape
 
 
 batch_size = 64
-epochs = 20
+epochs = 4 
 num_classes = len(np.unique(train_labels))
 
 
@@ -99,5 +101,5 @@ model_train = model.fit(train_X, train_label, batch_size=batch_size, epochs=epoc
 # In[ ]:
 
 
-model.save("model.h5py")
-
+# model.save("model.h5py")
+joblib.dump(model, "model.joblib")
