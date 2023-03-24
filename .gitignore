@@ -5,4 +5,3 @@ train/
 train_labels.csv
 train_preprocessed/
 xia*
-model.h5py/
