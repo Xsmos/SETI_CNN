@@ -5,3 +5,7 @@ train/
 train_labels.csv
 train_preprocessed/
 xia*
+*.un~
+__pycache__/
+*.py~
+.ipynb_checkpoints/
