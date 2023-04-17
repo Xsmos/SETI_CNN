@@ -1,71 +1,60 @@
 import os
 import numpy as np
-from time import sleep
+from time import time
 import matplotlib.pyplot as plt
+import pandas as pd
+import h5py
 
-def preprocess(dataset):
+def preprocess(dataset, debug = False):
     """
-    reshape and normalize the raw data into files .npy, labels.npy, and ids.npy.
+    This function substracts averaged OFF-cadences from ON-cadences.
     input: [0,9] U [a,f]
+    output: .h5 consisting of 'figure' and 'target'
     """
     dataset = str(dataset)
-    file_names = os.listdir("./train/"+dataset)
-    print("{} files in ./train/{}/ are going to be preprocessed.".format(len(file_names), dataset))
-    print("It's a 3GB file so make sure your machine has adequate memory; It needs around 20 minutes to preprocess.")
     
-    train_labels_array = np.loadtxt('train_labels.csv', delimiter=',', dtype=str)
-    train_labels_dict = {train_labels_array[i,0]: train_labels_array[i,1] for i in range(train_labels_array.shape[0])}
+    inputDir = "./seti-breakthrough-listen"
+    if not os.path.exists(os.path.join(inputDir, "train_preprocessed")):
+        os.makedirs(os.path.join(inputDir, "train_preprocessed"))
+        
+    train_labels = pd.read_csv(os.path.join(inputDir,'train_labels.csv'))
     
-    for file_name in file_names:
-        # print(file_name)
+    t_start = time()
+    for i, idx in enumerate(train_labels.id):
+        x = np.load(os.path.join(inputDir, "train", idx[0], idx+'.npy'))
         
-        # merge six figure into one
-        data_raw = np.load("./train/"+dataset+"/"+file_name)
-        data_1D = data_raw.reshape(np.prod(data_raw.shape))
-        data_2D = data_1D.reshape(data_raw.shape[1]*6, data_raw.shape[2])
-        # print("raw data shape =", data_raw.shape)
-        # # print(data_1D.shape)
-        # print("present shape =", data_2D.shape)
-        
-        # normalize the merged figure data
-        data_normalized = (data_2D-data_2D.min())/(data_2D.max()-data_2D.min())
-        # print("min =", data_normalized.min())
-        # print("max =", data_normalized.max())
-        
-        # check the data by plotting the figure
-        # plt.figure(figsize=(6,18))
-        # plt.imshow(data_normalized)
-        # plt.show()
+        off_averaged = np.average(x[1::2], axis=0)
+        on_substracted = x[0::2] - off_averaged
         
         if "all_figures_in_dataset" in vars():
-            all_figures_in_dataset = np.vstack((all_figures_in_dataset, [data_normalized]))
-            labels_in_dataset = np.append(labels_in_dataset, int(train_labels_dict[file_name[:-4]]))
-            # print("labels_in_dataset =", labels_in_dataset)
-            ids_of_labels = np.append(ids_of_labels, file_name[:-4])
+            all_figures_in_dataset = np.vstack((all_figures_in_dataset, [on_substracted]))
+            labels_in_dataset = np.append(labels_in_dataset, int(train_labels.target[i]))
+            ids_of_labels = np.append(ids_of_labels, idx)
             
-            percent = int(all_figures_in_dataset.shape[0]/len(file_names) * 100)
+            percent = int(all_figures_in_dataset.shape[0]/len(train_labels.id) * 100)
             if int(percent) % 5 == 0:
                 print("{}%".format(percent), end="\r")
         else:
             print("Initialize the variables...")
-            all_figures_in_dataset = np.array([data_normalized])
-            labels_in_dataset = int(train_labels_dict[file_name[:-4]])
-            # print("labels_in_dataset =", labels_in_dataset)
-            ids_of_labels = file_name[:-4]
-        # print("shape of all_figures_in_dataset =", all_figures_in_dataset.shape)
+            all_figures_in_dataset = np.array([on_substracted])
+            labels_in_dataset = int(train_labels.target[i])
+            ids_of_labels = idx
         
         # sleep(10)
-        # if all_figures_in_dataset.shape[0] >= 100:
-        #     break
+        if debug and all_figures_in_dataset.shape[0] >= 100:
+            break
         
-    print("\nshape of all_figures_in_dataset =", all_figures_in_dataset.shape)
+    with h5py.File(os.path.join(inputDir, 'train_preprocessed', "{}.h5".format(dataset)), 'w') as hf:
+        # print(ids_of_labels)
+        # hf.create_dataset("id", data = ids_of_labels)
+        print("target.shape = ", labels_in_dataset.shape)
+        hf.create_dataset("target", data = labels_in_dataset)
+        print("figure.shape = ", all_figures_in_dataset.shape)
+        hf.create_dataset("figure", data = all_figures_in_dataset)
     
-    if not os.path.exists("./train_preprocessed/"):
-        os.makedirs("./train_preprocessed/")
-        
-    np.save("./train_preprocessed/"+dataset, all_figures_in_dataset)
-    np.save("./train_preprocessed/"+dataset+"_labels", labels_in_dataset)
-    np.save("./train_preprocessed/"+dataset+"_ids", ids_of_labels)
-
+    t_end = time()
+    total_time = t_end - t_start
+    print("It costs {} s to preprocess the dataset.".format(int(total_time)))
+    
 if __name__ == "__main__":
-    preprocess(1)
+    preprocess(0, debug = True)
