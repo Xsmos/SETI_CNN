@@ -10,3 +10,4 @@ __pycache__/
 *.py~
 .ipynb_checkpoints/
 seti-breakthrough-listen/
+*.gitignore~
