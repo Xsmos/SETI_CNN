@@ -28,20 +28,16 @@ def preprocess(dataset, debug=False):
         on_substracted = x[0::2] - off_averaged
 
         if "all_figures_in_dataset" in vars():
-            all_figures_in_dataset = np.vstack(
-                (all_figures_in_dataset, on_substracted.reshape(1, on_substracted.shape[0], on_substracted.shape[1], on_substracted.shape[2])))
-            labels_in_dataset = np.append(
-                labels_in_dataset, int(train_labels.target.iloc[i]))
+            all_figures_in_dataset = np.vstack((all_figures_in_dataset, on_substracted.reshape(1, on_substracted.shape[0], on_substracted.shape[1], on_substracted.shape[2])))
+            labels_in_dataset = np.append(labels_in_dataset, int(train_labels.target.iloc[i]))
             # ids_of_labels = np.append(ids_of_labels, idx)
-            print(
-                "{}/{}".format(all_figures_in_dataset.shape[0], train_labels.id.shape[0]), end="\r")
+            print("{}/{}".format(all_figures_in_dataset.shape[0], train_labels.id.shape[0]), end="\r")
         else:
             print("Initialize the variables...")
             all_figures_in_dataset = np.array([on_substracted])
             labels_in_dataset = int(train_labels.target.iloc[i])
             # ids_of_labels = idx
 
-        # sleep(10)
         if debug and all_figures_in_dataset.shape[0] >= 100:
             break
 
