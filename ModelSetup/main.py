@@ -1,7 +1,7 @@
 import optuna
 import torch.nn as nn
 import torch.nn.functional as F
-import data, architecture
+import data as dataCode, architecture
 import torch
 import torch.optim as optim
 
@@ -12,6 +12,7 @@ def train(log_interval, model, train_loader, optimizer, epoch, device):
     for batch_idx, (data, target) in enumerate(train_loader):
         optimizer.zero_grad()
         output = model(data.to(device))
+        output = torch.reshape(output, (output.size()[0],))
         loss = F.binary_cross_entropy_with_logits(output, target.to(device))
         loss.backward()
         optimizer.step()
@@ -29,6 +30,7 @@ def test(model, test_loader, device):
     with torch.no_grad():
         for data, target in test_loader:
             output = model(data.to(device))
+            output=torch.reshape(output, (output.size()[0],))
             test_loss += F.binary_cross_entropy_with_logits(output, target.to(device), reduction='sum').item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.to(device).view_as(pred)).sum().item()
@@ -64,9 +66,9 @@ def train_seti():
     criterion = nn.BCEWithLogitsLoss()
 
     print('preparing data')
-    train_loader = data.create_dataset('train', cfg['seed'], fin, batch_size=cfg['trainbs'], shuffle=True)
+    train_loader = dataCode.create_dataset('train', cfg['seed'], fin, batch_size=cfg['trainbs'], shuffle=True)
     # valid_loader = data.create_dataset('valid', cfg['seed'], fin, batch_size=cfg['trainbs'], shuffle=False)
-    test_loader = data.create_dataset('test', cfg['seed'], fin, batch_size=cfg['testbs'], shuffle=False)
+    test_loader = dataCode.create_dataset('test', cfg['seed'], fin, batch_size=cfg['testbs'], shuffle=False)
 
     model = architecture.Net(cfg['activation'], cfg['dr1'], cfg['dr2']).to(device)
     optimizer = cfg['optimizer'](model.parameters(), lr=cfg['lr'])
