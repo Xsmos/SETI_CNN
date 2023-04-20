@@ -5,10 +5,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import h5py
 
+dt = h5py.special_dtype(vlen=str)
 
-def preprocess(dataset, debug=False):
+
+def subtract(dataset, debug=False):
     """
-    This function substracts averaged OFF-cadences from ON-cadences.
+    This function subtract averaged OFF-cadences from ON-cadences.
     input: [0,9] U [a,f]
     output: .h5 consisting of 'figure' and 'target'
     """
@@ -28,15 +30,18 @@ def preprocess(dataset, debug=False):
         on_substracted = x[0::2] - off_averaged
 
         if "all_figures_in_dataset" in vars():
-            all_figures_in_dataset = np.vstack((all_figures_in_dataset, on_substracted.reshape(1, on_substracted.shape[0], on_substracted.shape[1], on_substracted.shape[2])))
-            labels_in_dataset = np.append(labels_in_dataset, int(train_labels.target.iloc[i]))
-            # ids_of_labels = np.append(ids_of_labels, idx)
-            print("{}/{}".format(all_figures_in_dataset.shape[0], train_labels.id.shape[0]), end="\r")
+            all_figures_in_dataset = np.vstack((all_figures_in_dataset, on_substracted.reshape(
+                1, on_substracted.shape[0], on_substracted.shape[1], on_substracted.shape[2])))
+            labels_in_dataset = np.append(
+                labels_in_dataset, int(train_labels.target.iloc[i]))
+            ids_of_labels = np.append(ids_of_labels, idx)
+            print(
+                "{}/{}".format(all_figures_in_dataset.shape[0], train_labels.id.shape[0]), end="\r")
         else:
-            print("Initialize the variables...")
+            print("Preprocessing {}/...".format(dataset))
             all_figures_in_dataset = np.array([on_substracted])
             labels_in_dataset = int(train_labels.target.iloc[i])
-            # ids_of_labels = idx
+            ids_of_labels = idx
 
         if debug and all_figures_in_dataset.shape[0] >= 100:
             break
@@ -45,17 +50,54 @@ def preprocess(dataset, debug=False):
         os.makedirs(os.path.join(inputDir, "train_preprocessed"))
 
     with h5py.File(os.path.join(inputDir, 'train_preprocessed', "{}.h5".format(dataset)), 'w') as hf:
-        # print(ids_of_labels)
-        # hf.create_dataset("id", data = ids_of_labels)
         print("\ntarget.shape = ", labels_in_dataset.shape)
         hf.create_dataset("target", data=labels_in_dataset)
         print("figure.shape = ", all_figures_in_dataset.shape)
         hf.create_dataset("figure", data=all_figures_in_dataset)
+        print("id.shape =", ids_of_labels.shape)
+        hf.create_dataset("id", dtype=dt, data=ids_of_labels.tolist())
 
     t_end = time()
     total_time = t_end - t_start
     print("It costs {:.3f} s to preprocess the dataset.".format((total_time)))
 
 
+def combine(h5sdir="train", all=False, debug=False):
+    """
+    Combine every subtracted .h5 files in h5sdir into single one .h5 file.
+    If all=True, include files that were not downloaded yet and subtract them to get corresponding .h5s.
+    """
+
+    dir = os.path.join("./seti-breakthrough-listen", h5sdir+"_preprocessed")
+
+    if all:
+        file_list = np.append(np.arange(10).astype(
+            str), ['a', 'b', 'c', 'd', 'e', 'f'])
+    else:
+        file_list = np.array([0, 1], dtype=str)
+
+    for i in file_list:
+        if os.path.exists(os.path.join(dir, i+".h5")):
+            print("{}.h5 exists, skipping.".format(i))
+            continue
+        else:
+            subtract(i, debug=debug)
+            print("---"*30)
+
+    save_dir = os.path.join(dir, h5sdir+".h5")
+    if os.path.exists(save_dir):
+        print(h5sdir+".h5 already exists, skipping.")
+    else:
+        with h5py.File(save_dir, 'a') as file:
+            for name in file_list:
+                print("Combining file {}.h5 ...".format(name))
+                with h5py.File(os.path.join(dir, name+'.h5'), 'r') as f:
+                    file.create_group(name)
+                    file[name].create_dataset('figure', data=f['figure'])
+                    file[name].create_dataset("target", data=f['target'])
+                    file[name].create_dataset("id", data=f['id'])
+
+
 if __name__ == "__main__":
-    preprocess(1)
+    # subtract(1)
+    combine("train", debug=True)
