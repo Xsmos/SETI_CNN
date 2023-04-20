@@ -113,4 +113,4 @@ def combine(h5sdir="train", all=False, debug=False):
 
 if __name__ == "__main__":
     # subtract(1)
-    combine("train", all=False)
+    combine("train", all=True, debug=False)
