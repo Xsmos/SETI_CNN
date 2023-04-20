@@ -13,7 +13,7 @@ class Net(nn.Module):
         self.dropout1 = nn.Dropout2d(dr1)
         self.dropout2 = nn.Dropout2d(dr2)
         self.fc1 = nn.Linear(3350528, 128)
-        self.fc2 = nn.Linear(128,2)
+        self.fc2 = nn.Linear(128,1)
         self.activation = activation
 
     def forward(self, x):
