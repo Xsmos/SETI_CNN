@@ -92,12 +92,25 @@ def combine(h5sdir="train", all=False, debug=False):
             for name in file_list:
                 print("Combining file {}.h5 ...".format(name))
                 with h5py.File(os.path.join(dir, name+'.h5'), 'r') as f:
-                    file.create_group(name)
-                    file[name].create_dataset('figure', data=f['figure'])
-                    file[name].create_dataset("target", data=f['target'])
-                    file[name].create_dataset("id", data=f['id'])
+                    # file.create_group(name)
+                    if name == '0':
+                        figure = file.create_dataset(
+                            'figure', data=f['figure'], maxshape=(None,None,None,None))
+                        target = file.create_dataset(
+                            "target", data=f['target'], maxshape=(None,))
+                        idx = file.create_dataset(
+                            "id", data=f['id'], maxshape=(None, ))
+                    else:
+                        figure.resize(
+                            figure.shape[0]+f['figure'].shape[0], axis=0)
+                        figure[-f['figure'].shape[0]:] = f['figure']
+                        target.resize(
+                            target.shape[0]+f['target'].shape[0], axis=0)
+                        target[-f['target'].shape[0]:] = f['target']
+                        idx.resize(idx.shape[0]+f['id'].shape[0], axis=0)
+                        idx[-f['id'].shape[0]:] = f['id']
 
 
 if __name__ == "__main__":
     # subtract(1)
-    combine("train", all=True)
+    combine("train", all=False)
