@@ -1,0 +1,68 @@
+---------------------------------------
+Begin Slurm Prolog: Apr-20-2023 21:20:18
+Job ID:    1708455
+User ID:   bxia34
+Account:   gts-jw254-coda20
+Job name:  test_main_py
+Partition: gpu-v100
+QOS:       inferno
+---------------------------------------
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda deactivate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
+
+The following have been reloaded with a version change:
+  1) anaconda3/2022.05.0.1 => anaconda3/2022.05
+
+/storage/home/hcoda1/3/bxia34/.conda/envs/SETI/lib/python3.11/site-packages/torch/nn/modules/lazy.py:180: UserWarning: Lazy modules are a new feature under heavy development so changes to the API or functionality can happen at any moment.
+  warnings.warn('Lazy modules are a new feature under heavy development '
+/storage/home/hcoda1/3/bxia34/.conda/envs/SETI/lib/python3.11/site-packages/torch/nn/functional.py:1967: UserWarning: nn.functional.sigmoid is deprecated. Use torch.sigmoid instead.
+  warnings.warn("nn.functional.sigmoid is deprecated. Use torch.sigmoid instead.")
+preparing data
+(2784, 1, 819, 256)
+Feature size: torch.Size([2784, 1, 819, 256])
+Label size: torch.Size([2784])
+(556, 1, 819, 256)
+Feature size: torch.Size([556, 1, 819, 256])
+Label size: torch.Size([556])
+Train Epoch: 1 [0/2784 (0%)]	Loss: 0.938476
+Traceback (most recent call last):
+  File "/storage/coda1/p-jw254/0/bxia34/SETI_CNN/ModelSetup/main.py", line 86, in <module>
+    train_seti()
+  File "/storage/coda1/p-jw254/0/bxia34/SETI_CNN/ModelSetup/main.py", line 78, in train_seti
+    test_accuracy = test(model, test_loader, device)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/storage/coda1/p-jw254/0/bxia34/SETI_CNN/ModelSetup/main.py", line 36, in test
+    correct += pred.eq(target.to(device).view_as(pred)).sum().item()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: shape '[1]' is invalid for input of size 556
+srun: error: atl1-1-02-011-35-0: task 0: Exited with exit code 1
+---------------------------------------
+Begin Slurm Epilog: Apr-20-2023 21:36:36
+Job ID:        1708455
+Array Job ID:  _4294967294
+User ID:       bxia34
+Account:       gts-jw254-coda20
+Job name:      test_main_py
+Resources:     cpu=12,gres/gpu:v100=1,mem=128G,node=1
+Rsrc Used:     cput=03:15:48,vmem=8552K,walltime=00:16:19,mem=7812K,energy_used=0
+Partition:     gpu-v100
+QOS:           inferno
+Nodes:         atl1-1-02-011-35-0
+---------------------------------------

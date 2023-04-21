@@ -32,7 +32,7 @@ def test(model, test_loader, device):
             output = model(data.to(device))
             output=torch.reshape(output, (output.size()[0],))
             test_loss += F.binary_cross_entropy_with_logits(output, target.to(device), reduction='sum').item()  # sum up batch loss
-            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            pred = output.argmax(dim=0, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.to(device).view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
