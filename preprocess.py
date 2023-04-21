@@ -24,13 +24,13 @@ def subtract_both(dataset, which="test", debug=False):
             all_figures_in_dataset = np.vstack((all_figures_in_dataset, on_substracted.reshape(
                 1, on_substracted.shape[0], on_substracted.shape[1], on_substracted.shape[2])))
             # labels_in_dataset = np.append(labels_in_dataset, int(train_labels.target.iloc[i]))
-            ids_of_labels = np.append(ids_of_labels, idx[-4:])
+            ids_of_labels = np.append(ids_of_labels, idx[:-4])
             print("{}/{}".format(all_figures_in_dataset.shape[0], len(id_list)), end="\r")
         else:
             print("Preprocessing {}/...".format(dataset))
             all_figures_in_dataset = np.array([on_substracted])
             # labels_in_dataset = int(train_labels.target.iloc[i])
-            ids_of_labels = idx[-4:]
+            ids_of_labels = idx[:-4]
 
         if debug and all_figures_in_dataset.shape[0] >= 100:
             break
