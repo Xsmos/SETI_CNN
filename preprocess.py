@@ -161,4 +161,4 @@ def combine(which="test", all=False, debug=False):
 
 if __name__ == "__main__":
     # subtract(1)
-    combine("test", all=False, debug=True)
+    combine("test", all=True, debug=False)
